@@ -1,0 +1,48 @@
+📌 In this video :
+
+	Master node:
+		Hostname: master-1
+		IP : 192.168.1.101
+	Slave node:
+		Hostname: slave-1
+		IP : 192.168.1.102
+
+📌 On Master node
+
+	sudo setenforce 0 && sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+
+	sudo firewall-cmd --zone=public --permanent --add-port=3306/tcp
+
+# Unique ID of the MySQL server. 
+# This ID can not be re-used in any nodes in the cluster.
+server-id	 = 101
+# IP of the Master node
+bind-address	= 192.168.1.101
+#
+log_bin 	 = mysql-bin
+	
+	create user 'rep_user'@'%' identified with mysql_native_password by 'rep_user_PWD1!';
+	
+	grant replication slave on *.* to 'rep_user'@'%';
+	
+
+📌 On Slave node
+
+	sudo setenforce 0 && sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+
+	sudo firewall-cmd --zone=public --permanent --add-port=3306/tcp
+
+# Unique ID of the MySQL server. 
+# This ID can not be re-used in any nodes in the cluster.
+server-id	 = 102
+# IP of the Slave node
+bind-address	= IP_of_Slave_node
+#
+log_bin 	 = mysql-bin
+
+CHANGE MASTER TO
+MASTER_HOST='IP_of_Master_node',
+MASTER_USER='rep_user',
+MASTER_PASSWORD='rep_user_PWD1!',
+MASTER_LOG_FILE='Log_File_of_Master',
+MASTER_LOG_POS=Pos_of_Master;
